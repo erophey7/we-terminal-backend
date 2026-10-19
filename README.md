@@ -14,7 +14,16 @@ optional YAML file - nothing else to install.
 
 ## Quick start
 
-Download or build a binary (see below), then:
+Download a prebuilt binary from the [latest release](https://github.com/erophey7/we-terminal-backend/releases/latest) (or build one, see below):
+
+| Platform | File |
+|---|---|
+| Windows x64 / ARM64 | `webterm-windows-amd64.exe` / `webterm-windows-arm64.exe` |
+| Linux x64 / ARM64 | `webterm-linux-amd64` / `webterm-linux-arm64` |
+| macOS Intel / Apple Silicon | `webterm-darwin-amd64` / `webterm-darwin-arm64` |
+
+On Linux/macOS run `chmod +x` on the file first. The binaries are not code-signed, so
+Windows SmartScreen or macOS Gatekeeper may warn on first run. Then:
 
 ```sh
 ./webterm                  # reads webterm.yml from the current directory, or uses defaults
