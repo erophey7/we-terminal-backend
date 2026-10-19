@@ -33,6 +33,13 @@ export const MESSAGES = {
     historyUp: 'History ↑',
     historyDown: 'History ↓',
     back: 'Back',
+    statusTitle: 'No connection to the backend',
+    statusTrying: 'Trying to reach',
+    statusHintStart: 'Start the webterm backend on that machine.',
+    statusHintAddress: 'Check the address and the token in the wallpaper settings.',
+    statusHintOrigin: 'Allow this page in the backend config: `allowed_origins: ["file://"]` (plus a token).',
+    statusHintLog: 'The backend log tells why a connection was refused (token, origin, IP list).',
+    statusRetry: 'Retrying automatically...',
   },
   ru: {
     quickActions: 'Быстрые действия',
@@ -58,6 +65,13 @@ export const MESSAGES = {
     historyUp: 'История ↑',
     historyDown: 'История ↓',
     back: 'Назад',
+    statusTitle: 'Нет связи с бэкендом',
+    statusTrying: 'Пытаюсь подключиться к',
+    statusHintStart: 'Запустите бэкенд webterm на этой машине.',
+    statusHintAddress: 'Проверьте адрес и токен в настройках обоев.',
+    statusHintOrigin: 'Разрешите эту страницу в конфиге бэкенда: `allowed_origins: ["file://"]` (и задайте токен).',
+    statusHintLog: 'Причина отказа видна в логе бэкенда (токен, origin, список IP).',
+    statusRetry: 'Повторяю попытки автоматически...',
   },
 };
 

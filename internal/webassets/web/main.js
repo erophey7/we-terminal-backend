@@ -6,6 +6,7 @@ import { DEFAULT_BINDINGS } from './actions.js';
 import { installBindings } from './bindings.js';
 import { installRadial } from './radial.js';
 import { installKeyboard } from './keyboard.js';
+import { installStatusOverlay } from './status.js';
 
 // webterm — универсальная точка входа фронта.
 //
@@ -53,7 +54,10 @@ function readConfig(overrides) {
     menuSize: Number(overrides.menuSize ?? qp.get('menusize')) || 0,
     menuOpacity: overrides.menuOpacity ?? (qp.has('menuopacity') ? Number(qp.get('menuopacity')) : 78),
 
-    // Язык радиального меню (i18n.js): en по умолчанию
+    // Оверлей «нет связи с бэкендом» (status.js); ?status=0 отключает
+    statusOverlay: overrides.statusOverlay ?? qp.get('status') !== '0',
+
+    // Язык интерфейса поверх терминала — меню и сообщения (i18n.js): en по умолчанию
     menuLang: overrides.menuLang || qp.get('menulang') || 'en',
 
     // Кнопка радиального меню: положение (угол/сторона/free) и режим перетаскивания (для free)
@@ -161,6 +165,7 @@ export function startWebterm(overrides = {}) {
       screen ? Math.round(screen.clientWidth * dpr) : 0, screen ? Math.round(screen.clientHeight * dpr) : 0);
   }
 
+  const statusOverlay = installStatusOverlay({ transport, language: settings.menuLang, enabled: settings.statusOverlay });
   transport.onData((chunk) => feed(chunk));
   transport.connect();
 
@@ -440,7 +445,7 @@ export function startWebterm(overrides = {}) {
     if (partial.opacity !== undefined) setOpacity(Number(partial.opacity));
     if (partial.cursorStyle) setCursorStyle(partial.cursorStyle);
     if (partial.kbLayouts) keyboard.setLayouts(partial.kbLayouts);
-    if (partial.menuLang) radial.setLanguage(partial.menuLang);
+    if (partial.menuLang) { radial.setLanguage(partial.menuLang); statusOverlay.setLanguage(partial.menuLang); }
     if (partial.menuSize !== undefined) radial.setSize(partial.menuSize);
     if (partial.menuOpacity !== undefined) radial.setOpacity(partial.menuOpacity);
     if (partial.menuPos) radial.setPosition(partial.menuPos);
