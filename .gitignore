@@ -1,0 +1,4 @@
+dist/
+webterm.yml
+webterm.exe
+*.log

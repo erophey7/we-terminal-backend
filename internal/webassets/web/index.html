@@ -1,0 +1,73 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>webterm</title>
+  <!-- ВАЖНО: ставим флаг синхронно, до main.js — иначе его автозапуск
+       успеет сработать раньше, чем we-bridge.js его перехватит -->
+  <script>window.__WE_MANAGED = true;</script>
+  <link rel="stylesheet" href="vendor/fonts.css" />
+  <link rel="stylesheet" href="vendor/xterm.css" />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <div class="term-wrap" id="termWrap">
+    <div id="terminal"></div>
+  </div>
+
+  <!-- едва заметный хэндл у края экрана — тянет выезжающую панель -->
+  <button class="drawer-handle" id="drawerHandle" title="Настройки">
+    <span class="status-dot" id="statusDot"></span>
+  </button>
+
+  <div class="drawer" id="drawer" hidden>
+    <div class="drawer-row status-row">
+      <span class="status-dot" id="statusDot2"></span>
+      <span id="statusText">подключение…</span>
+    </div>
+
+    <label class="drawer-row">
+      Тема
+      <select id="settingTheme"></select>
+    </label>
+
+    <label class="drawer-row">
+      Гарнитура
+      <select id="settingFontFamily"></select>
+    </label>
+
+    <label class="drawer-row">
+      Размер шрифта
+      <div class="stepper">
+        <button id="fontMinus">−</button>
+        <span id="fontValue">14</span>
+        <button id="fontPlus">+</button>
+      </div>
+    </label>
+
+    <label class="drawer-row">
+      Прозрачность
+      <input id="settingOpacity" type="range" min="0" max="100" value="72" />
+    </label>
+
+    <label class="drawer-row">
+      Курсор
+      <select id="settingCursor">
+        <option value="bar">палочка</option>
+        <option value="block">блок</option>
+        <option value="underline">подчёркивание</option>
+      </select>
+    </label>
+
+    <div class="drawer-row search-row">
+      <input id="searchInput" type="text" placeholder="Поиск по буферу… (Ctrl+F)" autocomplete="off" />
+      <button id="searchPrev" title="Предыдущее (Shift+Enter)">↑</button>
+      <button id="searchNext" title="Следующее (Enter)">↓</button>
+      <span class="search-count" id="searchCount"></span>
+    </div>
+  </div>
+
+  <script type="module" src="we-bridge.js"></script>
+</body>
+</html>

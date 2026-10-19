@@ -1,0 +1,66 @@
+# The config is read from webterm.yml in the current working directory (pass another
+# path as the first argument: ./webterm /path/to/config.yml). A missing file is NOT an
+# error: the server then starts with open defaults, so check the startup log.
+# This is a commented example - name your real config webterm.yml.
+
+listen:
+  ip: 0.0.0.0        # address to listen on (0.0.0.0 = all interfaces, 127.0.0.1 = local only)
+  port: 3000
+
+# What to run as the shell. Empty = auto-detect: powershell.exe on Windows,
+# $SHELL (or bash) on Linux/macOS.
+shell:
+  cmd: ""
+  args: []
+  # Example: a bash session inside WSL on Windows
+  # cmd: wsl.exe
+  # args: ["-d", "Ubuntu", "-e", "bash"]
+
+# Environment the shell starts with.
+env:
+  inherit: true   # pass through the backend process environment (PATH etc.)
+  vars: {}        # extra / overriding variables
+  # vars:
+  #   LANG: "en_US.UTF-8"
+  #   MY_FLAG: "1"
+
+# Run-as (EXPERIMENTAL): start the shell as another user instead of the user
+# running the backend. Empty (user: "") = disabled, runs as the current user.
+#
+# Unix: the backend needs root (setuid/setgid on exec); no password needed.
+# Windows: a password is required (LogonUser) - provide it through an
+# environment variable when starting the backend and put the variable NAME
+# here, never the password itself (no secrets in the config file on disk).
+runas:
+  user: ""              # "username" (Unix) or "username" / "DOMAIN\username" (Windows)
+  password_env: ""      # e.g. WEBTERM_RUNAS_PASSWORD (set it before starting the backend)
+  workdir: ""           # empty = the user's home directory (Unix) / current directory (Windows)
+
+# Authentication - disabled by default. Any combination can be enabled.
+auth:
+  enabled: false
+  # HTTP Basic Auth for the page and the websocket upgrade (native browser prompt)
+  user: ""
+  pass: ""
+  # Token in ?token=... on the websocket URL - for environments without an
+  # interactive login (for example Wallpaper Engine)
+  token: ""
+
+# Allow-list of IPs/subnets that may connect. Empty = everyone is allowed
+# (use together with auth on non-local addresses).
+access:
+  allowed_ips: []
+  # Web origins (pages) allowed to open the WebSocket. Empty = same-origin pages only
+  # (plus clients that send no Origin header, e.g. curl). Other sites are rejected, which
+  # protects a local backend from hostile web pages. Special entries: "file://" for pages
+  # opened from a file (Wallpaper Engine; they report the origin "null" - use a token!),
+  # "*" to disable the check.
+  allowed_origins: []
+  # allowed_origins:
+  #   - "https://term.example.com"
+  #   - "file://"
+  # example:
+  # allowed_ips:
+  #   - "127.0.0.1"
+  #   - "::1"
+  #   - "192.168.1.0/24"
