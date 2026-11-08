@@ -44,8 +44,18 @@ export function installBindings({ api, getBindings, readonly = false }) {
     return true;
   }
 
+  // Если приложение в терминале включило отчёты мыши (btop, mc, vim с mouse=a, tmux), кнопки принадлежат ему:
+  // привязки (вставка средней кнопкой, умная правая и т.п.) не вмешиваются. Shift возвращает управление нам —
+  // так же, как в обычных терминалах.
+  const appOwnsMouse = (e) => {
+    if (e.target.closest?.('.app-confirm')) return true;
+    const mode = api.term?.modes?.mouseTrackingMode;
+    return !!mode && mode !== 'none' && !e.shiftKey;
+  };
+
   function onDown(e) {
     held.add(e.button);
+    if (appOwnsMouse(e)) return;
     const r = resolve(e.button);
     if (!r) return;
     if (r.isMod) { e.preventDefault(); e.stopPropagation(); swallowed.add(e.button); return; }
@@ -72,6 +82,7 @@ export function installBindings({ api, getBindings, readonly = false }) {
 
   function onContext(e) {
     e.preventDefault();                       // нативное меню в обоях не нужно
+    if (appOwnsMouse(e)) return;
     const r = resolve(2);
     if (!r || r.id === NONE || r.isMod) return;
     e.stopPropagation();
@@ -79,7 +90,7 @@ export function installBindings({ api, getBindings, readonly = false }) {
   }
 
   function onWheel(e) {
-    if (!modHeld()) return;
+    if (!modHeld() || appOwnsMouse(e)) return;
     const mode = WHEEL_MOD_BY_ID[getBindings().wheelMod];
     if (!mode || mode.id === NONE) return;
     e.preventDefault();

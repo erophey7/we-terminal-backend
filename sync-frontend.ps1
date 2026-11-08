@@ -11,5 +11,5 @@ if (Test-Path $dest) { Remove-Item -Recurse -Force $dest }
 New-Item -ItemType Directory -Force -Path $dest | Out-Null
 Copy-Item ..\frontend\index.html, ..\frontend\style.css -Destination $dest
 Copy-Item ..\frontend\*.js -Destination $dest
-Copy-Item ..\frontend\vendor -Destination $dest -Recurse
+Copy-Item ..\frontend\vendor, ..\frontend\lang -Destination $dest -Recurse
 Write-Host "synced ..\frontend -> $dest"

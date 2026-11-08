@@ -16,6 +16,11 @@
 // Серверы (Go и server.js) — сырой pty в ws: send() шлёт ввод текстовыми
 // кадрами как есть, resize() — единственный управляющий кадр (бинарный).
 
+// Subprotocol that asks the backend for raw binary output frames. The backend must negotiate it;
+// browsers reject the handshake with older backends that omit it. Binary frames are decoded here as one UTF-8 stream, so a
+// character split across two reads of the pty is not damaged.
+export const WS_SUBPROTOCOL = 'webterm.v2';
+
 export class WsTransport {
   constructor(url) {
     this.url = url;
@@ -36,7 +41,9 @@ export class WsTransport {
   connect() {
     this._manualClose = false;
     this._emitStatus('connecting');
-    this.socket = new WebSocket(this.url);
+    this.socket = new WebSocket(this.url, WS_SUBPROTOCOL);
+    this.socket.binaryType = 'arraybuffer';
+    const decoder = new TextDecoder();
 
     this.socket.addEventListener('open', () => {
       this.reconnectDelay = 500;
@@ -44,7 +51,8 @@ export class WsTransport {
     });
 
     this.socket.addEventListener('message', (ev) => {
-      this.dataHandlers.forEach((cb) => cb(ev.data));
+      const chunk = typeof ev.data === 'string' ? ev.data : decoder.decode(ev.data, { stream: true });
+      if (chunk) this.dataHandlers.forEach((cb) => cb(chunk));
     });
 
     this.socket.addEventListener('close', () => {

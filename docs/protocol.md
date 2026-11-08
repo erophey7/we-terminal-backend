@@ -18,11 +18,20 @@ persistence or multiplexing.
 
 | Direction | Frame | Meaning |
 |---|---|---|
-| server -> client | text | Raw pty output (terminal escape sequences included) |
+| server -> client | text, or binary (see below) | Raw pty output (terminal escape sequences included) |
 | client -> server | text | Raw terminal input, written to the pty as is. This is whatever a terminal emulator would send for key presses, pastes and mouse reports, including escape sequences |
 | client -> server | binary, 4 or 8 bytes | **Resize**: `uint16` columns, `uint16` rows, and optionally `uint16` width and `uint16` height of the terminal area in pixels (8 bytes). All big-endian |
 
-Binary frames of any other length are ignored. On Unix the pixel size is stored in the pty
+**Output frame type.** By default the server sends output in text frames, which is the original protocol. A read of the
+pty can end in the middle of a multi-byte UTF-8 character, and a text frame must be valid UTF-8, so a browser may then
+drop the connection or show a replacement character. A client that offers the WebSocket subprotocol `webterm.v2`
+(`new WebSocket(url, 'webterm.v2')`) gets the output in **binary** frames instead and must decode them as one UTF-8
+stream (`new TextDecoder().decode(chunk, { stream: true })`, with `binaryType = 'arraybuffer'`).
+Update the backend together with this frontend: a browser rejects the handshake if it requests `webterm.v2` and the
+server does not negotiate it. The backend still supports older clients that do not request a subprotocol; those clients
+receive text frames. Input and resize frames are the same either way.
+
+Binary frames of any other length (client -> server) are ignored. On Unix the pixel size is stored in the pty
 (`ws_xpixel` / `ws_ypixel`), which graphics tools such as `kitten icat` and `chafa` read to
 scale images; ConPTY on Windows has no pixel size, so it is ignored there. Text frames are never
 interpreted by the server, so a client can send any byte sequence the shell

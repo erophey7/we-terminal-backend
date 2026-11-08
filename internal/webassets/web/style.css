@@ -136,7 +136,12 @@ body.no-ui .drawer {
   backdrop-filter: blur(18px) saturate(140%);
   z-index: 19;
   animation: drawer-in 0.18s ease;
+  /* на низком окне панель прокручивается; тёмная схема — чтобы нативные списки и скроллбар не были белыми */
+  overflow-y: auto;
+  color-scheme: dark;
+  scrollbar-width: thin;
 }
+.drawer > * { flex-shrink: 0; }
 @keyframes drawer-in {
   from { transform: translateX(16px); opacity: 0; }
   to { transform: translateX(0); opacity: 1; }
@@ -171,6 +176,11 @@ body.no-ui .drawer {
   padding: 6px 8px;
   font-family: inherit;
   font-size: 12px;
+}
+
+.drawer select option {
+  background: #1b1a26;
+  color: #eee;
 }
 
 .drawer input[type='range'] {
@@ -243,3 +253,44 @@ body.no-ui .drawer {
   text-align: center;
   text-transform: none;
 }
+
+/* переключатели копирования/вставки в панели настроек */
+.drawer-flags { display: flex; flex-direction: column; }
+.drawer-subtitle { opacity: 0.6; font-size: 0.85em; text-transform: uppercase; letter-spacing: 0.05em; }
+.drawer-flags input[type="checkbox"] { margin-left: auto; }
+.drawer-flags .drawer-row:not(.drawer-subtitle) { flex-direction: row; align-items: center; justify-content: space-between; }
+
+/* импорт/экспорт тем */
+.theme-tools { flex-direction: row; flex-wrap: wrap; align-items: center; gap: 6px; }
+.theme-tools button {
+  font: inherit; font-size: 11px; color: var(--text-dim); cursor: pointer;
+  background: rgba(255, 255, 255, 0.06); border: 1px solid var(--glass-border); border-radius: 6px; padding: 3px 8px;
+}
+.theme-tools button:hover:not(:disabled) { color: #fff; border-color: var(--accent); }
+.theme-tools button:disabled { opacity: 0.4; cursor: default; }
+.theme-msg { flex-basis: 100%; text-transform: none; letter-spacing: normal; font-size: 11px; }
+
+.drawer-check { flex-direction: row; align-items: center; justify-content: space-between; }
+
+/* перетаскивание хэндла настроек */
+.drawer-handle { touch-action: none; }
+.drawer-handle.dragging { opacity: 1 !important; cursor: grabbing; background: rgba(255, 255, 255, 0.25); transition: none; }
+
+/* фоновая картинка под терминалом */
+.bg-image { position: fixed; inset: 0; background-size: cover; background-position: center; z-index: 0; pointer-events: none; }
+.bg-image[hidden] { display: none; }
+.term-wrap { z-index: 1; }
+/* фон рисует сам канвас (непрозрачный или полупрозрачный над картинкой); подложка viewport не должна его перекрывать */
+.xterm .xterm-viewport { background-color: transparent !important; }
+.app-confirm{position:fixed;inset:0;z-index:1000;display:flex;align-items:center;justify-content:center;
+  padding:24px;box-sizing:border-box;background:rgba(8,6,16,.78);color:#eceaff;
+  font:14px/1.5 'JetBrains Mono',ui-monospace,monospace}
+.app-confirm section{width:min(100%,480px);box-sizing:border-box;padding:24px;border-radius:16px;
+  background:#1a1628;border:1px solid var(--accent,#8a7dff);box-shadow:0 12px 48px #0008}
+.app-confirm h2{margin:0 0 12px;font-size:18px;color:var(--accent,#8a7dff)}
+.app-confirm p{margin:0 0 24px}
+.app-confirm-buttons{display:flex;justify-content:flex-end;flex-wrap:wrap;gap:12px}
+.app-confirm button{min-height:44px;padding:10px 16px;border:1px solid #ffffff40;border-radius:8px;
+  background:#302a42;color:inherit;font:inherit;cursor:pointer}
+.app-confirm button:hover,.app-confirm button:focus-visible{outline:2px solid var(--accent,#8a7dff);outline-offset:2px}
+.app-confirm .app-confirm-accept{background:var(--accent,#8a7dff);color:#101018}

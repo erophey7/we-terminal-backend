@@ -127,7 +127,7 @@ platform. Test them in a safe environment before relying on them.
 ## Protocol
 
 See [docs/protocol.md](docs/protocol.md). In short: text frames carry raw
-input/output, and a 4-byte binary frame (`uint16` cols, `uint16` rows, big-endian)
+input (and output, or binary frames for clients that offer the `webterm.v2` subprotocol), and a 4-byte binary frame (`uint16` cols, `uint16` rows, big-endian)
 resizes the pty.
 
 ## Project layout

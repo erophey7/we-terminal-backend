@@ -4,18 +4,17 @@
 package server
 
 import (
-	"encoding/binary"
 	"log"
 	"mime"
 	"net/http"
 	"os"
-	"sync"
 
 	"github.com/gorilla/websocket"
 
 	"webterm-backend/internal/access"
 	"webterm-backend/internal/auth"
 	"webterm-backend/internal/config"
+	"webterm-backend/internal/ptybridge"
 	"webterm-backend/internal/ptyshell"
 	"webterm-backend/internal/webassets"
 
@@ -66,7 +65,7 @@ func New(cfg *config.Config) (*Server, error) {
 		fileSrv: http.FileServer(http.FS(sub)),
 		// The Origin policy is enforced in handlePty (see internal/access/origin.go);
 		// without this override gorilla would apply its own same-origin-only default.
-		upgrader: websocket.Upgrader{CheckOrigin: func(r *http.Request) bool { return true }},
+		upgrader: websocket.Upgrader{CheckOrigin: func(r *http.Request) bool { return true }, Subprotocols: []string{ptybridge.Subprotocol}},
 	}, nil
 }
 
@@ -139,77 +138,7 @@ func (s *Server) handlePty(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	p, err := ptyshell.Start(opts)
-	if err != nil {
+	if err := ptybridge.Run(conn, opts); err != nil {
 		log.Printf("pty start: %v", err)
-		return
 	}
-	// Close() закрывает хендлы и зовётся РОВНО ОДИН раз, здесь, уже после
-	// того как обе горутины ниже гарантированно завершились (wg.Wait()).
-	// Закрывать его раньше, из одной горутины, пока другая ещё блокирована
-	// в Read() на тех же хендлах — гонка (на Windows это прямо запрещено
-	// и роняет процесс целиком, см. ptyshell.PTY.Terminate).
-	defer p.Close()
-
-	var wg sync.WaitGroup
-	wg.Add(2)
-
-	// pty -> ws
-	go func() {
-		defer wg.Done()
-		buf := make([]byte, 32*1024)
-		for {
-			n, rerr := p.Read(buf)
-			if n > 0 {
-				if werr := conn.WriteMessage(websocket.TextMessage, buf[:n]); werr != nil {
-					return
-				}
-			}
-			if rerr != nil {
-				return
-			}
-		}
-	}()
-
-	// ws -> pty
-	go func() {
-		defer wg.Done()
-		for {
-			msgType, data, rerr := conn.ReadMessage()
-			// Бинарный кадр — resize: uint16 BE cols, rows, [xpixel, ypixel]. Кадр из 4 байт —
-			// только колонки/строки, из 8 — ещё и размер окна в пикселях (для kitten icat и т.п.).
-			// Текстовые кадры — обычный ввод в pty (протокол прежних клиентов).
-			if rerr == nil && msgType == websocket.BinaryMessage {
-				if len(data) == 4 || len(data) == 8 {
-					cols := binary.BigEndian.Uint16(data[0:2])
-					rows := binary.BigEndian.Uint16(data[2:4])
-					if cols > 0 && rows > 0 {
-						var err error
-						if pr, ok := p.(ptyshell.PixelResizer); ok && len(data) == 8 {
-							err = pr.ResizePixels(cols, rows, binary.BigEndian.Uint16(data[4:6]), binary.BigEndian.Uint16(data[6:8]))
-						} else {
-							err = p.Resize(cols, rows)
-						}
-						if err != nil {
-							log.Printf("pty resize: %v", err)
-						}
-					}
-				}
-				continue
-			}
-			if rerr != nil {
-				// Клиент отключился: будим блокированный Read() в другой
-				// горутине безопасно — завершаем только процесс, хендлы
-				// останутся целы до общего Close() после wg.Wait().
-				p.Terminate()
-				return
-			}
-			if _, werr := p.Write(data); werr != nil {
-				p.Terminate()
-				return
-			}
-		}
-	}()
-
-	wg.Wait()
 }

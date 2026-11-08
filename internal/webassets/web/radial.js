@@ -51,6 +51,7 @@ const PAGES = {
       { id: 'themeNext', label: 'theme', glyph: '◐', stay: true },
       { id: 'opacityPlus', label: 'opacityPlus', glyph: '◑', stay: true },
       { id: 'opacityMinus', label: 'opacityMinus', glyph: '○', stay: true },
+      { id: 'resetPreferences', label: 'resetPreferences', glyph: '↺' },
       { id: 'scrollBottom', label: 'toBottom', glyph: '⤓' },
       { id: 'reconnect', label: 'reconnect', glyph: '⟳' },
       { page: 'keys', label: 'pageKeys', icon: 'M6 12h.01M12 12h.01M18 12h.01' },

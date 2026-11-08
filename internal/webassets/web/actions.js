@@ -36,6 +36,7 @@ export const ACTIONS = [
   { id: 'opacityMinus', label: 'Прозрачность фона −10', group: 'Вид', run: (a) => a.setOpacity(a.settings.opacity - 10) },
   { id: 'themeNext', label: 'Следующая тема', group: 'Вид', run: (a) => a.cycleTheme(1) },
   { id: 'themePrev', label: 'Предыдущая тема', group: 'Вид', run: (a) => a.cycleTheme(-1) },
+  { id: 'resetPreferences', label: 'Сбросить сохранённые настройки', group: 'Вид', run: (a) => a.resetPreferences() },
   { id: 'toggleKeyboard', label: 'Показать/скрыть виртуальную клавиатуру', group: 'Вид', run: (a) => a.toggleKeyboard() },
   { id: 'toggleMenu', label: 'Показать/скрыть радиальное меню', group: 'Вид', run: (a) => a.toggleMenu() },
   { id: 'toggleDrawer', label: 'Показать/скрыть панель настроек и поиска', group: 'Вид', run: (a) => a.toggleDrawer() },

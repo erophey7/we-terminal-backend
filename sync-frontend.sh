@@ -11,5 +11,5 @@ rm -rf internal/webassets/web
 mkdir -p internal/webassets/web
 cp ../frontend/index.html ../frontend/style.css internal/webassets/web/
 cp ../frontend/*.js internal/webassets/web/
-cp -r ../frontend/vendor internal/webassets/web/
+cp -r ../frontend/vendor ../frontend/lang internal/webassets/web/
 echo "synced ../frontend -> internal/webassets/web"

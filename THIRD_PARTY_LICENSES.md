@@ -21,6 +21,7 @@ The files are taken from jsDelivr unmodified, and their copyright banners are in
 | @xterm/addon-image | 0.9.0 | MIT (per the banner in the file; it embeds a WASM Sixel decoder whose license was not checked separately) | same |
 | @xterm/addon-search | 0.16.0 | MIT | same |
 | @xterm/addon-clipboard | 0.2.0 | MIT | same |
+| @xterm/addon-serialize | 0.14.0 | MIT | same |
 
 The xterm.js license text is in `vendor/licenses/xterm.js-LICENSE.txt`. xterm.js
 contains code derived from term.js (Christopher Jeffrey, MIT); this is reflected in
@@ -34,6 +35,9 @@ now served locally, which also means the page makes no requests to Google).
 | Font | License | Copyright holder | License file |
 |---|---|---|---|
 | JetBrains Mono | SIL OFL 1.1 | The JetBrains Mono Project Authors | `vendor/licenses/JetBrainsMono-OFL.txt` |
+| Symbols Nerd Font Mono (icons) | MIT; icon sets inside keep their own licenses (OFL, MIT, Apache 2.0, CC-BY) | Ryan L McIntyre and the icon authors, Nerd Fonts | `vendor/licenses/NerdFontsSymbols-MIT.txt`, `NerdFontsSymbols-README.md`, `Apache-2.0.txt` |
+| Cascadia Code (Braille glyphs only) | SIL OFL 1.1 | Microsoft Corporation, via Fontsource | `vendor/licenses/CascadiaCode-OFL.txt` |
+| Noto Sans Symbols, Noto Sans Symbols 2 (fallback glyphs: Braille, arrows, symbols) | SIL OFL 1.1 | The Noto Project Authors | `vendor/licenses/NotoSansSymbols-OFL.txt` |
 | Fira Code | SIL OFL 1.1 | The Fira Code Project Authors | `vendor/licenses/FiraCode-OFL.txt` |
 | IBM Plex Mono | SIL OFL 1.1 | IBM Corp. (Reserved Font Name "Plex") | `vendor/licenses/IBMPlexMono-OFL.txt` |
 | Source Code Pro | SIL OFL 1.1 | Adobe (Reserved Font Name "Source") | `vendor/licenses/SourceCodePro-OFL.txt` |

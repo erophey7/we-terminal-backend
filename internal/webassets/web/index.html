@@ -17,28 +17,28 @@
   </div>
 
   <!-- едва заметный хэндл у края экрана — тянет выезжающую панель -->
-  <button class="drawer-handle" id="drawerHandle" title="Настройки">
+  <button class="drawer-handle" id="drawerHandle" data-i18n-title="settings">
     <span class="status-dot" id="statusDot"></span>
   </button>
 
   <div class="drawer" id="drawer" hidden>
     <div class="drawer-row status-row">
       <span class="status-dot" id="statusDot2"></span>
-      <span id="statusText">подключение…</span>
+      <span id="statusText" data-i18n="drawerConnecting"></span>
     </div>
 
     <label class="drawer-row">
-      Тема
+      <span data-i18n="dTheme"></span>
       <select id="settingTheme"></select>
     </label>
 
     <label class="drawer-row">
-      Гарнитура
+      <span data-i18n="dFont"></span>
       <select id="settingFontFamily"></select>
     </label>
 
     <label class="drawer-row">
-      Размер шрифта
+      <span data-i18n="dFontSize"></span>
       <div class="stepper">
         <button id="fontMinus">−</button>
         <span id="fontValue">14</span>
@@ -47,23 +47,23 @@
     </label>
 
     <label class="drawer-row">
-      Прозрачность
+      <span data-i18n="dOpacity"></span>
       <input id="settingOpacity" type="range" min="0" max="100" value="72" />
     </label>
 
     <label class="drawer-row">
-      Курсор
+      <span data-i18n="dCursor"></span>
       <select id="settingCursor">
-        <option value="bar">палочка</option>
-        <option value="block">блок</option>
-        <option value="underline">подчёркивание</option>
+        <option value="bar" data-i18n="cursorBar"></option>
+        <option value="block" data-i18n="cursorBlock"></option>
+        <option value="underline" data-i18n="cursorUnderline"></option>
       </select>
     </label>
 
     <div class="drawer-row search-row">
-      <input id="searchInput" type="text" placeholder="Поиск по буферу… (Ctrl+F)" autocomplete="off" />
-      <button id="searchPrev" title="Предыдущее (Shift+Enter)">↑</button>
-      <button id="searchNext" title="Следующее (Enter)">↓</button>
+      <input id="searchInput" type="text" data-i18n-placeholder="searchPlaceholder" autocomplete="off" />
+      <button id="searchPrev" data-i18n-title="searchPrev">↑</button>
+      <button id="searchNext" data-i18n-title="searchNext">↓</button>
       <span class="search-count" id="searchCount"></span>
     </div>
   </div>

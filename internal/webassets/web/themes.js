@@ -98,6 +98,57 @@ export const THEMES = {
   },
 };
 
+// Палитра по умолчанию в Windows Terminal («Campbell»): для тех, кто хочет, чтобы TUI выглядели как в привычном терминале.
+THEMES.campbell = {
+  label: 'Campbell (Windows Terminal)',
+  colors: {
+    background: '#0c0c0c',
+    foreground: '#cccccc',
+    cursor: '#ffffff',
+    cursorAccent: '#0c0c0c',
+    selectionBackground: 'rgba(255, 255, 255, 0.3)',
+    black: '#0c0c0c', red: '#c50f1f', green: '#13a10e', yellow: '#c19c00',
+    blue: '#0037da', magenta: '#881798', cyan: '#3a96dd', white: '#cccccc',
+    brightBlack: '#767676', brightRed: '#e74856', brightGreen: '#16c60c',
+    brightYellow: '#f9f1a5', brightBlue: '#3b78ff', brightMagenta: '#b4009e',
+    brightCyan: '#61d6d6', brightWhite: '#f2f2f2',
+  },
+  accent: '#3b78ff',
+  accent2: '#16c60c',
+  bgGrad1: '#0c0c0c',
+  bgGrad2: '#0c0c0c',
+};
+
+// Фон терминала — сплошной цвет темы. С прозрачным фоном (#00000000) реверс-видео (подсветка вставки в bash,
+// выделения в TUI) красило текст «цветом фона», то есть невидимым, а OSC 11 сообщал приложениям чёрный.
+for (const t of Object.values(THEMES)) {
+  if (t.colors.background === '#00000000') t.colors.background = t.bgGrad2;
+}
+
+// «Clear»: ничего не подкрашивает. Стандартная палитра xterm (её ждут оболочки и их темы — zsh/powerlevel10k, vim, btop),
+// чёрный фон, а подстройка контраста (minimumContrastRatio) для неё принудительно выключена — иначе xterm.js сам
+// осветляет/затемняет цвета, которые приложение выбрало осознанно. Настройка «Контраст текста» при этой теме не действует.
+THEMES.clear = {
+  label: 'Clear (original colors)',
+  fixedContrast: 1,
+  colors: {
+    background: '#000000',
+    foreground: '#e5e5e5',
+    cursor: '#e5e5e5',
+    cursorAccent: '#000000',
+    selectionBackground: 'rgba(255, 255, 255, 0.3)',
+    black: '#000000', red: '#cd0000', green: '#00cd00', yellow: '#cdcd00',
+    blue: '#0000ee', magenta: '#cd00cd', cyan: '#00cdcd', white: '#e5e5e5',
+    brightBlack: '#7f7f7f', brightRed: '#ff0000', brightGreen: '#00ff00',
+    brightYellow: '#ffff00', brightBlue: '#5c5cff', brightMagenta: '#ff00ff',
+    brightCyan: '#00ffff', brightWhite: '#ffffff',
+  },
+  accent: '#cdcd00',
+  accent2: '#00cd00',
+  bgGrad1: '#000000',
+  bgGrad2: '#000000',
+};
+
 export function applyThemeChrome(name) {
   const t = THEMES[name] || THEMES.nebula;
   const root = document.documentElement.style;
@@ -106,4 +157,111 @@ export function applyThemeChrome(name) {
   root.setProperty('--bg-grad-1', t.bgGrad1);
   root.setProperty('--bg-grad-2', t.bgGrad2);
   return t;
+}
+
+
+// ---------- свои темы (localStorage) ----------
+// Формат — docs/themes.md. Хранилище: { "<ключ>": { label, colors, accent, accent2, bgGrad1, bgGrad2 } }, ключи начинаются с `user-`.
+export const CUSTOM_THEMES_KEY = 'webterm:themes';
+export const CUSTOM_PREFIX = 'user-';
+
+const COLOR_KEYS = [
+  'background', 'foreground', 'cursor', 'cursorAccent', 'selectionBackground',
+  'black', 'red', 'green', 'yellow', 'blue', 'magenta', 'cyan', 'white',
+  'brightBlack', 'brightRed', 'brightGreen', 'brightYellow', 'brightBlue', 'brightMagenta', 'brightCyan', 'brightWhite',
+];
+const CSS_COLOR = /^(#[0-9a-fA-F]{3,4}|#[0-9a-fA-F]{6}|#[0-9a-fA-F]{8}|rgba?\(\s*\d{1,3}\s*(,\s*\d{1,3}\s*){2}(,\s*(0|1|0?\.\d+)\s*)?\))$/;
+
+// Проверяет и нормализует тему из JSON. Недостающие цвета берутся из `base` (по умолчанию Nebula).
+// Возвращает { theme } или { error }.
+export function normalizeTheme(input, base = THEMES.nebula) {
+  if (!input || typeof input !== 'object' || Array.isArray(input)) return { error: 'theme must be a JSON object' };
+  const colors = { ...base.colors };
+  for (const [k, v] of Object.entries(input.colors ?? {})) {
+    if (!COLOR_KEYS.includes(k)) return { error: `unknown color key: ${k}` };
+    if (typeof v !== 'string' || !CSS_COLOR.test(v.trim())) return { error: `invalid color for ${k}: ${String(v).slice(0, 40)}` };
+    colors[k] = v.trim();
+  }
+  const pick = (key, fallback) => {
+    const v = input[key];
+    if (v === undefined) return fallback;
+    if (typeof v !== 'string' || !CSS_COLOR.test(v.trim())) throw new Error(`invalid color for ${key}`);
+    return v.trim();
+  };
+  try {
+    const bg = colors.background;
+    const theme = {
+      label: String(input.name ?? input.label ?? 'Custom theme').slice(0, 40) || 'Custom theme',
+      colors,
+      accent: pick('accent', colors.cursor),
+      accent2: pick('accent2', colors.green),
+      // фон страницы вокруг терминала: по умолчанию — фон терминала
+      bgGrad1: pick('bgGrad1', bg),
+      bgGrad2: pick('bgGrad2', bg),
+    };
+    return { theme };
+  } catch (e) {
+    return { error: e.message };
+  }
+}
+
+export function slugify(name) {
+  return String(name).toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '').slice(0, 30) || 'theme';
+}
+
+export function loadCustomThemes(storage = globalThis.localStorage) {
+  try {
+    const raw = JSON.parse(storage.getItem(CUSTOM_THEMES_KEY) || '{}');
+    const out = {};
+    for (const [key, def] of Object.entries(raw)) {
+      if (!key.startsWith(CUSTOM_PREFIX)) continue;
+      const r = normalizeTheme(def, THEMES.nebula);
+      if (r.theme) out[key] = r.theme;
+    }
+    return out;
+  } catch {
+    return {};
+  }
+}
+
+function saveCustomThemes(all, storage) {
+  try { storage.setItem(CUSTOM_THEMES_KEY, JSON.stringify(all)); } catch { /* хранилище недоступно */ }
+}
+
+// Добавляет сохранённые темы в THEMES (вызывать при старте).
+export function registerCustomThemes(storage = globalThis.localStorage) {
+  const custom = loadCustomThemes(storage);
+  Object.assign(THEMES, custom);
+  return Object.keys(custom);
+}
+
+// Импорт из текста JSON. Возвращает { key } или { error }. Ключ уникален: повторный импорт того же имени заменяет тему.
+export function importTheme(text, storage = globalThis.localStorage) {
+  let parsed;
+  try { parsed = JSON.parse(text); } catch (e) { return { error: `not valid JSON: ${e.message}` }; }
+  const r = normalizeTheme(parsed);
+  if (r.error) return { error: r.error };
+  const key = CUSTOM_PREFIX + slugify(r.theme.label);
+  const all = loadCustomThemes(storage);
+  all[key] = r.theme;
+  saveCustomThemes(all, storage);
+  THEMES[key] = r.theme;
+  return { key };
+}
+
+export function deleteCustomTheme(key, storage = globalThis.localStorage) {
+  if (!key.startsWith(CUSTOM_PREFIX)) return false;
+  const all = loadCustomThemes(storage);
+  if (!(key in all)) return false;
+  delete all[key];
+  saveCustomThemes(all, storage);
+  delete THEMES[key];
+  return true;
+}
+
+// Тема как JSON для скачивания (в том же формате, который понимает импорт).
+export function exportTheme(key) {
+  const t = THEMES[key];
+  if (!t) return null;
+  return JSON.stringify({ name: t.label, colors: t.colors, accent: t.accent, accent2: t.accent2, bgGrad1: t.bgGrad1, bgGrad2: t.bgGrad2 }, null, 2) + '\n';
 }

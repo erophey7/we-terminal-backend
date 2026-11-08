@@ -22,9 +22,12 @@ export function createTerminal({
   enableWebgl = true,
   enableImages = true,
   enableKitty = true,
+  minimumContrastRatio = 4.5,
 } = {}) {
   const term = new Terminal({
     theme: colors,
+    allowTransparency: true,            // нужно для фоновой картинки: фон терминала становится полупрозрачным
+    minimumContrastRatio,
     fontFamily,
     fontSize,
     lineHeight: 1.25,
@@ -90,5 +93,5 @@ export function createTerminal({
   const kitty = enableKitty ? installKitty(term) : null;
   const feed = kitty ? kitty.feed : (data) => term.write(data);
 
-  return { term, fitAddon, searchAddon, usingWebgl, feed };
+  return { term, fitAddon, searchAddon, usingWebgl, feed, clearImages: () => kitty?.clearAll(), setImagePolicy: (p) => kitty?.setPolicy(p) };
 }

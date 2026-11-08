@@ -4,6 +4,7 @@
 // main.js сам себя не запускает — старт делаем мы, когда (и если)
 // придут свойства из WE.
 import { startWebterm } from './main.js';
+import { applySavedPreferences, clearSavedPreferences } from './preferences.js';
 
 // Включённые раскладки: свойства kb_<код> (bool). Порядок — как в kblayouts.js.
 const KB_CODES = ['en', 'ru', 'uk', 'de', 'fr', 'es', 'it', 'tr'];
@@ -18,6 +19,8 @@ function cfgFromProps(props) {
     token: props.token?.value || '',
     enableWebgl: !!props.advancedgraphics?.value,
     enableImages: !!props.advancedgraphics?.value,
+    enableKitty: props.kittygraphics?.value !== false,
+    nerdSymbols: props.nerdsymbols?.value !== false,
     theme: props.theme?.value || 'nebula',
     fontFamily: props.fontfamily?.value || 'jetbrains',
     fontSize: Number(props.fontsize?.value) || 14,
@@ -45,7 +48,7 @@ function cfgFromProps(props) {
 // терминала/WebGL/транспорта. Это важно именно в WE: лишние
 // пересоздания WebGL-контекста/WASM на входящем от CEF странном
 // рендерере — вероятный источник крашей (STATUS_ILLEGAL_INSTRUCTION).
-const STRUCTURAL_KEYS = ['wsUrl', 'token', 'enableWebgl', 'enableImages', 'readonly', 'showUI', 'keyboardEnabled'];
+const STRUCTURAL_KEYS = ['wsUrl', 'token', 'enableWebgl', 'enableImages', 'enableKitty', 'readonly', 'showUI', 'keyboardEnabled'];
 
 let webterm = null;
 let lastCfg = null;
@@ -54,14 +57,21 @@ let lastCfg = null;
 // в значения по умолчанию.
 const allProps = {};
 
+function resetSavedPreferences() {
+  if (!clearSavedPreferences()) return;
+  const cfg = cfgFromProps(allProps);
+  lastCfg = cfg;
+  webterm?.updateConfig(cfg, { persist: false });
+}
+
 window.wallpaperPropertyListener = {
   applyUserProperties(props) {
     Object.assign(allProps, props);
-    const cfg = cfgFromProps(allProps);
+    const cfg = applySavedPreferences(cfgFromProps(allProps));
 
     if (!webterm) {
       lastCfg = cfg;
-      webterm = startWebterm(cfg);
+      webterm = startWebterm({ ...cfg, resetSavedPreferences });
       return;
     }
 
@@ -71,7 +81,7 @@ window.wallpaperPropertyListener = {
       location.reload();
       return;
     }
-    webterm.updateConfig(cfg);
+    webterm.updateConfig(cfg, { persist: false });
   },
 };
 
